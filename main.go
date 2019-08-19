@@ -3,17 +3,37 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
+	"os"
+
+	tgbotapi "github.com/Syfaro/telegram-bot-api"
 )
 
-func login(w http.ResponseWriter, r *http.Request) {
-
-}
-
 func main() {
-	http.HandleFunc("/login", login)
+	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	port := 8000
-	log.Printf("Server run at localhost:%d\n", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil))
+	bot.Debug = true
+	log.Printf("Bot name is %s", bot.Self.UserName)
+
+	updatesConfig := tgbotapi.NewUpdate(0)
+	updatesConfig.Timeout = 60
+
+	updates, err := bot.GetUpdatesChan(updatesConfig)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for {
+		update := <-updates
+
+		chatID := update.Message.Chat.ID
+		text := update.Message.Text
+
+		answer := fmt.Sprintf("%s\n\nMessage send from this bot", text)
+
+		message := tgbotapi.NewMessage(chatID, answer)
+		bot.Send(message)
+	}
 }
