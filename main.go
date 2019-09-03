@@ -25,8 +25,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	for {
-		update := <-updates
+	for update := range updates {
+		if update.Message == nil {
+			continue
+		}
 
 		chatID := update.Message.Chat.ID
 		text := update.Message.Text
