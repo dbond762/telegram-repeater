@@ -3,12 +3,21 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	tgbotapi "github.com/Syfaro/telegram-bot-api"
 )
 
+func handler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("Hello, I`m Povtoryuha bot"))
+}
+
 func main() {
+	// This is need for heroku
+	http.HandleFunc("/", handler)
+	go http.ListenAndServe(fmt.Sprintf(":%s", os.Getenv("PORT")), nil)
+
 	bot, err := tgbotapi.NewBotAPI(os.Getenv("TOKEN"))
 	if err != nil {
 		log.Fatal(err)
@@ -17,13 +26,7 @@ func main() {
 	bot.Debug = true
 	log.Printf("Bot name is %s", bot.Self.UserName)
 
-	updatesConfig := tgbotapi.NewUpdate(0)
-	updatesConfig.Timeout = 60
-
-	updates, err := bot.GetUpdatesChan(updatesConfig)
-	if err != nil {
-		log.Fatal(err)
-	}
+	updates := bot.ListenForWebhook("/"+bot.Token)
 
 	for update := range updates {
 		if update.Message == nil {
