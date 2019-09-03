@@ -31,7 +31,7 @@ func main() {
 		chatID := update.Message.Chat.ID
 		text := update.Message.Text
 
-		answer := fmt.Sprintf("%s\n\nMessage send from this bot", text)
+		answer := fmt.Sprintf("%s\n\nThis is wery useful bot", text)
 
 		message := tgbotapi.NewMessage(chatID, answer)
 		bot.Send(message)
